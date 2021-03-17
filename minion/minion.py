@@ -6,7 +6,7 @@ import signal
 
 from rpyc.utils.server import ThreadedServer
 
-DATA_DIR = "C:\\Users\\chaitanyad\\Documents\\Personal\\DisFS\\minion_data\\"
+DATA_DIR = "/dis-data"
 
 
 def int_handler(_signal, _frame):
@@ -37,7 +37,8 @@ class MinionService(rpyc.Service):
             host, port = current_minion
             current_minion_conn = rpyc.connect(host, port=port)
             current_minion_conn_root = current_minion_conn.root.Minion()
-            current_minion_conn_root.put(block_uuid, block_data, remaining_minions)
+            current_minion_conn_root.put(
+                block_uuid, block_data, remaining_minions)
 
         def delete_block(self, block_uuid):
             pass
