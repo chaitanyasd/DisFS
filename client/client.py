@@ -1,3 +1,12 @@
+"""
+Client is used to request data/ send data to and from minions.
+todo:
+1. Add exception handling
+2. Add support to know if a minion is unreachable and policy to allocate blocks to other minions
+3. Policy to handle corrupt blocks
+4. Add encryption
+"""
+
 import rpyc
 import traceback
 import sys

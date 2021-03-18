@@ -1,3 +1,12 @@
+"""
+Minion is a node in the network which has blocks of information.
+todo:
+1. Queue for requests?
+2. What happens if this minions fails and restarts?
+3. How to handle connection issues
+4. Replication policy
+"""
+
 import rpyc
 import os
 import sys
