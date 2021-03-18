@@ -3,6 +3,8 @@ import traceback
 import sys
 import os
 
+DATA_DIR = "C:\\Users\\chaitanyad\\Documents\\Personal\\DisFS\\received-data-dir\\"
+
 
 def get(master_connection, minions, file_name):
     if not master_connection.file_exists(file_name):
@@ -10,22 +12,42 @@ def get(master_connection, minions, file_name):
         return
 
     file_table = master_connection.read(file_name)
+    block_size = master_connection.get_block_size()
+    file_path = DATA_DIR + file_name
+    full_file_received = True
 
-    for block_info in file_table:
-        block_uuid = block_info[0]
-        minions_holding_block = block_info[1]
-        block_found = False
+    if not os.path.isfile(file_path):
+        open(file_path, "wb")
 
-        for minion in [minions[minion_id] for minion_id in minions_holding_block]:
-            host, port = minion
-            block_data = read_from_minion(host, port, block_uuid)
-            if block_data is not None:
-                sys.stdout.write(block_data)
-                block_found = True
-                break
+    with open(file_path, "wb") as f:
+        for block_index in range(len(file_table)):
+            block_info = file_table[block_index]
+            block_uuid = block_info[0]
+            minions_holding_block = block_info[1]
+            block_found = False
+            f.seek(block_index * block_size)
 
-        if not block_found:
-            print("No block found", block_uuid)
+            for minion in [minions[minion_id] for minion_id in minions_holding_block]:
+                host, port = minion
+                block_data = read_from_minion(host, port, block_uuid)
+                if block_data is not None:
+                    f.write(block_data)
+                    # sys.stdout.write(block_data)
+                    block_found = True
+                    break
+
+            if not block_found:
+                # print("No block found", block_uuid)
+                print("Skipped - ", block_index + 1, " / ", len(file_table))
+                full_file_received = False
+            else:
+                print("Received - ", block_index + 1, " / ", len(file_table))
+
+    if not full_file_received:
+        os.remove(file_path)
+        print("Error receiving - ", file_name)
+    else:
+        print("File ", file_name, " received.")
 
 
 def put(master_connection, file_name, file_identifier):
@@ -33,7 +55,7 @@ def put(master_connection, file_name, file_identifier):
     blocks_info = master_connection.write(file_identifier, file_size)
     block_size = master_connection.get_block_size()
 
-    with open(file_name, "r") as f:
+    with open(file_name, "rb") as f:
         total_blocks = len(blocks_info)
         i = 0
         for block in blocks_info:
@@ -42,8 +64,9 @@ def put(master_connection, file_name, file_identifier):
             minions = [master_connection.get_minions()[_] for _ in block[1]]
             send_to_minion(block_uuid, block_data, minions)
             i += 1
-            print(i, " / ", total_blocks)
+            print("Sending - ", i, " / ", total_blocks)
 
+    print ("File sent!")
 
 def send_to_minion(block_uuid, block_data, minions):
     current_minion = minions[0]
@@ -64,6 +87,10 @@ def read_from_minion(host, port, block_uuid):
 
 if __name__ == "__main__":
     try:
+        # create DATA_DIR
+        if not os.path.isdir(DATA_DIR):
+            os.mkdir(DATA_DIR)
+
         args = sys.argv[1:]
         master_connection = rpyc.connect("localhost", port=1111)
         master_connection_root = master_connection.root.Master()

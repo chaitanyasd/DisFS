@@ -6,7 +6,7 @@ import signal
 
 from rpyc.utils.server import ThreadedServer
 
-DATA_DIR = "/dis-data"
+DATA_DIR = "C:\\Users\\chaitanyad\\Documents\\Personal\\DisFS\\dis-data\\"
 
 
 def int_handler(_signal, _frame):
@@ -16,7 +16,7 @@ def int_handler(_signal, _frame):
 class MinionService(rpyc.Service):
     class exposed_Minion:
         def exposed_put(self, block_uuid, block_data, minions):
-            with open(DATA_DIR + str(block_uuid), 'w') as f:
+            with open(DATA_DIR + str(block_uuid), 'wb') as f:
                 f.write(block_data)
             if len(minions) > 0:
                 self.forward(block_uuid, block_data, minions)
@@ -26,7 +26,7 @@ class MinionService(rpyc.Service):
             if not os.path.isfile(block_address):
                 return None
             print("--- Sending block: ", block_uuid)
-            with open(block_address) as f:
+            with open(block_address, "rb") as f:
                 return f.read()
 
         def forward(self, block_uuid, block_data, minions):

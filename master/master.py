@@ -12,6 +12,7 @@ import sys
 import traceback
 import uuid
 import rpyc
+import os
 
 from rpyc.utils.server import ThreadedServer
 
@@ -106,7 +107,7 @@ class MasterService(rpyc.Service):
             return block_nodes_mapping
 
         def calc_num_of_blocks(self, file_size):
-            return math.ceil(float(file_size) / self.replication_factor)
+            return math.ceil(float(file_size) / self.block_size)
 
         def exposed_file_exists(self, file_name):
             return file_name in self.file_table
