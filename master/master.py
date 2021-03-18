@@ -1,6 +1,9 @@
 """
 Master provided methods to support distribution of the file onto many nodes.
 It implements a RPC server that interacts with the client.
+todo:
+1. logging
+2. Queue?
 """
 
 import configparser
@@ -26,8 +29,8 @@ from rpyc.utils.server import ThreadedServer
 
 
 def int_handler(_signal, _frame):
-    pickle.dump((MasterService.exposed_Master.file_table, MasterService.exposed_Master.block_mapping),
-                open("fs.img", "wb"))
+    # pickle.dump((MasterService.exposed_Master.file_table, MasterService.exposed_Master.block_mapping),
+    #             open("fs.img", "wb"))
     sys.exit(0)
 
 
