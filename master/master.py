@@ -89,25 +89,33 @@ class MasterService(rpyc.Service):
             return None
 
         def exposed_write(self, file_name, file_size):
-            # todo
-            # can check the hash of the file if it already exists with us, else write to nodes.
-            # if writing again, we need to delete the file as well
-            if self.exposed_file_exists(file_name):
-                pass
+            try:
+                # todo
+                # can check the hash of the file if it already exists with us, else write to nodes.
+                # if writing again, we need to delete the file as well
+                if self.exposed_file_exists(file_name):
+                    pass
 
-            self.file_table[file_name] = list()
-            num_blocks = self.calc_num_of_blocks(file_size)
-            blocks = self.map_file_blocks_to_nodes(file_name, num_blocks)
-            return blocks
+                self.file_table[file_name] = list()
+                num_blocks = self.calc_num_of_blocks(file_size)
+                blocks = self.map_file_blocks_to_nodes(file_name, num_blocks)
+                return blocks
+            except Exception as e:
+                traceback.print_exc(e)
+                return None
 
         def map_file_blocks_to_nodes(self, file_name, num_blocks):
-            block_nodes_mapping = list()
-            for block_index in range(num_blocks):
-                block_uuid = uuid.uuid1()
-                node_ids = random.sample(self.minions.keys(), self.replication_factor)
-                block_nodes_mapping.append((block_uuid, node_ids))
-                self.file_table[file_name].append((block_uuid, node_ids))
-            return block_nodes_mapping
+            try:
+                block_nodes_mapping = list()
+                for block_index in range(num_blocks):
+                    block_uuid = uuid.uuid1()
+                    node_ids = random.sample(self.minions.keys(), self.replication_factor)
+                    block_nodes_mapping.append((block_uuid, node_ids))
+                    self.file_table[file_name].append((block_uuid, node_ids))
+                return block_nodes_mapping
+            except Exception as e:
+                traceback.print_exc(e)
+                return list()
 
         def calc_num_of_blocks(self, file_size):
             return math.ceil(float(file_size) / self.block_size)
